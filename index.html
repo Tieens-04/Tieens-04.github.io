@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide Thuyết Trình Kinh Tế Chính Trị - Gunpla Store</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Roboto:wght@300;400;500;700&display=swap');
+
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --primary: #38bdf8;
+            --secondary: #fb7185;
+            --accent: #fcd34d;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #34d399;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body, html {
+            width: 100%; height: 100%;
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow: hidden;
+        }
+
+        /* Slide System */
+        .slider-wrapper {
+            width: 100vw; height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%; height: 100%;
+            position: absolute; top: 0; left: 0;
+            opacity: 0;
+            transform: scale(0.95) translateY(20px);
+            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            padding: 3rem;
+            z-index: 1;
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            z-index: 10;
+        }
+
+        /* Animations */
+        .slide h1, .slide h2, .slide .content-node, .slide table, .slide .grid-2 {
+            opacity: 0; transform: translateY(15px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .slide.active h1, .slide.active h2, .slide.active .content-node, .slide.active table, .slide.active .grid-2 {
+            opacity: 1; transform: translateY(0);
+        }
+
+        .slide.active h2 { transition-delay: 0.1s; }
+        .slide.active .content-node, .slide.active .grid-2 { transition-delay: 0.2s; }
+        .slide.active table { transition-delay: 0.3s; }
+
+        /* Typography */
+        h1 { font-family: 'Oswald', sans-serif; font-size: 3.5rem; color: var(--primary); text-transform: uppercase; margin-bottom: 1rem; text-align: center; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);}
+        h2 { font-family: 'Oswald', sans-serif; font-size: 2.2rem; color: var(--accent); text-transform: uppercase; margin-bottom: 1.5rem; text-align: center; border-bottom: 3px solid var(--primary); padding-bottom: 5px; width: fit-content; }
+        h3 { font-family: 'Oswald', sans-serif; font-size: 1.6rem; color: var(--primary); margin-bottom: 0.8rem; }
+        p { font-size: 1.25rem; line-height: 1.6; color: var(--text-main); margin-bottom: 0.5rem; }
+        ul { list-style: none; width: 100%; }
+        li { font-size: 1.15rem; margin-bottom: 0.6rem; padding-left: 1.5rem; position: relative; line-height: 1.5; }
+        li::before { content: "►"; position: absolute; left: 0; color: var(--secondary); font-size: 0.9em;}
+
+        .content-node { width: 100%; max-width: 1000px; display: flex; flex-direction: column; align-items: center; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; width: 100%; max-width: 1000px; margin-top: 0.5rem; }
+        .card { background: rgba(30, 41, 59, 0.7); padding: 1.5rem; border-radius: 12px; border-left: 5px solid var(--primary); box-shadow: 0 10px 20px rgba(0,0,0,0.2); backdrop-filter: blur(5px);}
+        .card.alt { border-left-color: var(--secondary); }
+        .card.highlight { border-left-color: var(--success); }
+
+        /* Flowchart */
+        .flowchart { display: flex; align-items: center; justify-content: center; gap: 1rem; width: 100%; margin: 2rem 0; flex-wrap: wrap;}
+        .flow-step { background: var(--bg-card); border: 2px solid var(--primary); padding: 1rem 1.5rem; border-radius: 8px; font-weight: bold; font-family: 'Oswald', sans-serif; min-width: 150px; text-align: center; box-shadow: 0 0 15px rgba(56, 189, 248, 0.15); font-size: 1.2rem;}
+        .flow-arrow { font-size: 1.8rem; color: var(--accent); animation: pulse 1.5s infinite; }
+
+        /* Tables */
+        table { border-collapse: collapse; width: 100%; max-width: 900px; margin-top: 1rem; background: var(--bg-card); border-radius: 8px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        th, td { padding: 15px 20px; text-align: left; font-size: 1.15rem; border-bottom: 1px solid #334155; }
+        th { background: var(--primary); color: #0f172a; font-family: 'Oswald', sans-serif; text-transform: uppercase; font-size: 1.3rem;}
+        tr:last-child td { border-bottom: none; }
+        tr:nth-child(even) { background: rgba(51, 65, 85, 0.4); }
+        
+        .table-highlight { color: var(--accent); font-weight: bold; font-size: 1.3rem;}
+        .table-total { background-color: rgba(244, 63, 94, 0.1); font-weight: bold;}
+
+        /* Formula Box */
+        .formula-box { background: rgba(15, 23, 42, 0.8); border: 2px dashed var(--accent); padding: 1.5rem; border-radius: 8px; font-family: 'Oswald', sans-serif; font-size: 2.2rem; color: var(--accent); text-align: center; margin: 1.5rem 0; width: 100%; max-width: 600px; letter-spacing: 2px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);}
+
+        /* Controls */
+        .control-panel { position: fixed; bottom: 30px; right: 40px; display: flex; gap: 15px; z-index: 100; }
+        .btn { background: var(--bg-card); color: var(--text-main); border: 1px solid var(--primary); padding: 12px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: all 0.3s ease; font-family: 'Oswald', sans-serif; text-transform: uppercase; font-size: 1.1rem; }
+        .btn:hover { background: var(--primary); color: #0f172a; box-shadow: 0 0 15px var(--primary); transform: translateY(-2px); }
+        
+        .slide-progress { position: fixed; bottom: 40px; left: 40px; font-family: 'Oswald', sans-serif; font-size: 1.3rem; color: var(--text-muted); letter-spacing: 3px; z-index: 100; }
+
+        @keyframes pulse {
+            0% { transform: scale(1) translateX(0); opacity: 0.5; }
+            50% { transform: scale(1.1) translateX(5px); opacity: 1; }
+            100% { transform: scale(1) translateX(0); opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="slide-progress" id="progressIndicator">SLIDE: 01 / 12</div>
+    
+    <div class="control-panel">
+        <button class="btn" onclick="moveSlide(-1)">Trước</button>
+        <button class="btn" onclick="moveSlide(1)">Tiếp</button>
+    </div>
+
+    <div class="slider-wrapper">
+
+        <div class="slide active">
+            <h1>Báo Cáo Môn Kinh Tế Chính Trị</h1>
+            <h2>Phân Tích Quá Trình Sản Xuất & Giá Trị Thặng Dư</h2>
+            <div class="content-node" style="margin-top: 2rem;">
+                <p style="font-size: 1.6rem; color: var(--primary); font-weight: bold; text-align: center;">SẢN PHẨM: MÔ HÌNH ĐỒ CHƠI GUNDAM (GUNPLA)</p>
+                <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                    <p style="color: var(--accent); font-size: 1.2rem; text-align: center;"><strong>Mô hình ứng dụng:</strong> Thương nghiệp điện tử (Nhập sỉ - Bán lẻ)</p>
+                    <p style="color: var(--text-muted); font-size: 1.1rem; text-align: center;"><strong>Chu kỳ hạch toán:</strong> 01 Tháng (30 ngày)</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>Slide 2 - Tổng Quan Dự Án Kinh Doanh</h2>
+            <div class="grid-2">
+                <div class="card">
+                    <h3>Thông Tin Hàng Hóa</h3>
+                    <ul>
+                        <li><strong>Mặt hàng:</strong> Mô hình lắp ráp Gunpla HG 1/144</li>
+                        <li><strong>Giá bán niêm yết (W):</strong> <span style="color: var(--accent); font-weight: bold;">350.000 VNĐ / Hộp</span></li>
+                        <li><strong>Phân khúc:</strong> Giới trẻ, học sinh, sinh viên đam mê văn hóa Anime/Manga.</li>
+                    </ul>
+                </div>
+                <div class="card alt">
+                    <h3>Mô Hình & Quy Mô (1 Tháng)</h3>
+                    <ul>
+                        <li><strong>Hình thức:</strong> Tư bản thương nghiệp thuần túy.</li>
+                        <li><strong>Tốc độ bán hàng:</strong> 10 hộp / ngày.</li>
+                        <li><strong>Tổng sản lượng tiêu thụ (Q):</strong> <span style="color: var(--primary); font-weight: bold; font-size: 1.3rem;">300 hộp / tháng</span>.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>Slide 3 - Quy Trình Vận Động Tư Bản Thương Nghiệp</h2>
+            <div class="content-node">
+                <div class="flowchart">
+                    <div class="flow-step">Nhập Sỉ Hàng Hóa<br><span style="font-size: 0.9em; font-weight: normal; color: var(--text-muted);">(Từ Đại lý)</span></div>
+                    <div class="flow-arrow">➔</div>
+                    <div class="flow-step">Lưu Trữ & Quản Lý<br><span style="font-size: 0.9em; font-weight: normal; color: var(--text-muted);">(Kho bãi)</span></div>
+                    <div class="flow-arrow">➔</div>
+                    <div class="flow-step">Marketing & Chốt Đơn<br><span style="font-size: 0.9em; font-weight: normal; color: var(--text-muted);">(Website/Fanpage)</span></div>
+                    <div class="flow-arrow">➔</div>
+                    <div class="flow-step">Đóng Gói (QC)<br><span style="font-size: 0.9em; font-weight: normal; color: var(--text-muted);">(Bao bì, xốp nổ)</span></div>
+                    <div class="flow-arrow">➔</div>
+                    <div class="flow-step">Giao Vận C2C<br><span style="font-size: 0.9em; font-weight: normal; color: var(--text-muted);">(Đến tay KH)</span></div>
+                </div>
+                <div style="background: rgba(30, 41, 59, 0.8); padding: 15px 25px; border-radius: 8px; border-left: 4px solid var(--accent); margin-top: 10px;">
+                    <p style="font-size: 1.15rem; text-align: left; margin: 0;">Theo C. Mác, công thức chung của tư bản thương nghiệp là: <strong style="color: var(--accent); font-size: 1.3rem;">T - H - T'</strong> (Trong đó T' = T + m). Mục đích của quá trình này không tạo ra giá trị sử dụng mới, mà nhằm thực hiện và thu hồi giá trị thặng dư đã được ẩn chứa trong hàng hóa.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>Slide 4 - Các Yếu Tố Phục Vụ Lưu Thông</h2>
+            <div class="grid-2">
+                <div class="card">
+                    <h3>1. Tư liệu lưu thông</h3>
+                    <ul>
+                        <li><strong>Đối tượng lao động:</strong> Các hộp mô hình Gundam nhập sỉ nguyên kiện.</li>
+                        <li><strong>Tư liệu lao động:</strong> Hệ thống Website E-commerce, máy tính làm việc, máy in mã vạch, vật tư đóng gói (hộp carton, băng keo).</li>
+                    </ul>
+                </div>
+                <div class="card highlight">
+                    <h3>2. Sức lao động (Nhân sự)</h3>
+                    <ul>
+                        <li><strong>Quy mô:</strong> <span style="color: var(--success); font-weight: bold;">02 Nhân viên</span> chuyên trách (Trực page, chốt đơn, đóng gói).</li>
+                        <li><strong>Chế độ Lương cứng:</strong> 200.000đ / ngày (Hưởng đủ 30 ngày, gồm 3 ngày phép).</li>
+                        <li><strong>Chế độ Hoa hồng:</strong> Thưởng đồng đội 5.000đ / nhân viên / 1 đơn hàng thành công.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>Slide 5 - Hạch Toán Chi Phí (Chu Kỳ 1 Tháng)</h2>
+            <div class="content-node">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Khoản mục đầu tư</th>
+                            <th>Diễn giải chi tiết</th>
+                            <th>Thành tiền (VNĐ)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Nhập hàng sỉ gốc</td>
+                            <td>200.000đ × 300 hộp</td>
+                            <td>60.000.000</td>
+                        </tr>
+                        <tr>
+                            <td>Chi phí vật tư đóng gói</td>
+                            <td>10.000đ × 300 hộp</td>
+                            <td>3.000.000</td>
+                        </tr>
+                        <tr>
+                            <td>Khấu hao máy móc & Web</td>
+                            <td>20.000đ × 30 ngày</td>
+                            <td>600.000</td>
+                        </tr>
+                        <tr>
+                            <td>Quỹ Lương cứng (2 NV)</td>
+                            <td>200.000đ × 30 ngày × 2 người</td>
+                            <td>12.000.000</td>
+                        </tr>
+                        <tr>
+                            <td>Quỹ Hoa hồng (2 NV)</td>
+                            <td>(5.000đ × 300 đơn) × 2 người</td>
+                            <td>3.000.000</td>
+                        </tr>
+                        <tr class="table-total">
+                            <td colspan="2">TỔNG CHI PHÍ TƯ BẢN ỨNG TRƯỚC (k) / THÁNG</td>
+                            <td class="table-highlight" style="color: var(--secondary);">78.600.000</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>Slide 6 - Phân Chia Cấu Thành Giá Trị Theo C. Mác</h2>
+            <div class="grid-2">
+                <div class="card">
+                    <h3 style="text-align: center;">Tư Bản Bất Biến (c)</h3>
+                    <p style="text-align: center; font-size: 2rem; color: var(--accent); font-family: 'Oswald'; margin: 10px 0;">63.600.000 VNĐ</p>
+                    <p style="font-size: 1.1rem; text-align: justify; color: var(--text-muted);">Bao gồm: Giá trị hàng sỉ (60tr) + Phụ phí đóng gói (3tr) + Khấu hao hệ thống (0.6tr).<br><br><strong>Bản chất:</strong> Phần tư bản này chỉ bảo tồn và <em>chuyển dịch nguyên vẹn</em> giá trị vào sản phẩm, không tạo ra giá trị mới.</p>
+                </div>
+                <div class="card alt">
+                    <h3 style="text-align: center;">Tư Bản Khả Biến (v)</h3>
+                    <p style="text-align: center; font-size: 2rem; color: var(--secondary); font-family: 'Oswald'; margin: 10px 0;">15.000.000 VNĐ</p>
+                    <p style="font-size: 1.1rem; text-align: justify; color: var(--text-muted);">Bao gồm: Lương cứng 2 NV (12tr) + Quỹ Hoa hồng đồng đội (3tr).<br><br><strong>Bản chất:</strong> Hao phí sức lao động sống, tạo ra sự <em>lớn lên về mặt giá trị</em> trong quá trình lưu thông hàng hóa.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>Slide 7 - Xác Định Giá Trị Thặng Dư (M)</h2>
+            <div class="content-node">
+                <p style="font-size: 1.3rem;">Dựa trên Tổng doanh thu dự kiến 1 tháng (300 hộp × 350.000đ = <strong>105.000.000 VNĐ</strong>):</p>
+                <div class="formula-box">
+                    Tổng Doanh Thu (W) = c + v + M
+                </div>
+                <div style="background: var(--bg-card); padding: 2rem; border-radius: 12px; width: 100%; max-width: 700px;">
+                    <p style="font-family: monospace; font-size: 1.5rem; text-align: left;">➔ 105.000.000 = 63.600.000 + 15.000.000 + M</p>
+                    <p style="font-family: monospace; font-size: 1.8rem; color: var(--success); font-weight: bold; text-align: left; margin-top: 15px; border-top: 1px solid #334155; padding-top: 15px;">➔ Tổng M = 26.400.000 VNĐ / Tháng</p>
+                </div>
+                <p style="margin-top: 15px; font-size: 1.15rem; color: var(--text-muted); max-width: 800px;">
+                    <em>* Lưu ý: Mức thặng dư này thực chất là lợi nhuận thương nghiệp, do nhà sản xuất công nghiệp nhường lại một phần thông qua mức chiết khấu giá sỉ để shop thực hiện khâu lưu thông bán lẻ. (Tính trung bình m ≈ 88.000 VNĐ/hộp).</em>
+                </p>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>Slide 8 - Tỷ Suất Giá Trị Thặng Dư (m')</h2>
+            <div class="content-node">
+                <p style="font-size: 1.3rem;">Mức độ bóc lột / Hiệu suất sử dụng sức lao động thương mại:</p>
+                <div class="formula-box" style="border-color: var(--primary); color: var(--primary);">
+                    m' = (M / v) &times; 100%
+                </div>
+                <div style="background: rgba(56, 189, 248, 0.1); padding: 1.5rem 3rem; border-radius: 12px; border: 1px solid var(--primary); margin: 10px 0;">
+                    <p style="font-size: 2.2rem; font-family: 'Oswald'; color: var(--text-main); margin: 0;">
+                        m' = <span style="color: var(--accent);">(26.400.000 / 15.000.000)</span> &times; 100% &approx; <span style="color: var(--success); font-size: 3rem;">176,00%</span>
+                    </p>
+                </div>
+                <div style="max-width: 850px; text-align: justify; margin-top: 15px;">
+                    <p style="font-size: 1.2rem; line-height: 1.6;">
+                        <strong>Phân tích kinh tế:</strong> Tỷ suất đạt <strong>176,00%</strong> phản ánh hiệu quả cao của việc áp dụng <em>chế độ hoa hồng</em>. Cơ chế này kích thích người lao động làm việc với cường độ cao hơn, tạo ra lượng giá trị thặng dư khoảng gấp <strong>1,76</strong> lần chi phí tư bản khả biến mà chủ shop bỏ ra trả lương.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>Slide 9 - Khối Lượng Giá Trị Thặng Dư</h2>
+            <div class="content-node">
+                <div class="grid-2">
+                    <div class="card" style="display: flex; flex-direction: column; justify-content: center;">
+                        <p style="font-size: 1.3rem; margin-bottom: 15px;">Theo Các-Mác, khối lượng giá trị thặng dư phụ thuộc vào 2 yếu tố:</p>
+                        <ul style="font-size: 1.2rem;">
+                            <li>Tỷ suất giá trị thặng dư (m' = 176,00%)</li>
+                            <li>Quy mô tư bản khả biến (V = 15.000.000đ)</li>
+                        </ul>
+                    </div>
+                    <div class="card alt" style="text-align: center;">
+                        <h3 style="color: var(--text-main);">Tổng Khối Lượng (M) / Tháng</h3>
+                        <p style="font-family: 'Oswald'; font-size: 3.5rem; color: var(--accent); margin: 15px 0;">26.400.000đ</p>
+                        <p style="color: var(--text-muted);">M = m' &times; V</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>Slide 10 - Các Phương Pháp Tăng Giá Trị Thặng Dư</h2>
+            <div class="content-node">
+                <div class="card" style="width: 100%; margin-bottom: 1.5rem;">
+                    <h3 style="color: var(--accent);">1. Giá trị thặng dư tuyệt đối</h3>
+                    <p style="font-size: 1.15rem; text-align: left;">Kéo dài thời gian làm việc thực tế của 2 nhân viên (ví dụ từ 9 tiếng lên 11 tiếng/ngày) trong những dịp Sale Lớn để chốt nhiều đơn hơn, trong khi vẫn giữ nguyên mức lương cứng 200.000đ/ngày (chỉ tăng chi phí hoa hồng đơn hàng).</p>
+                </div>
+                <div class="card" style="width: 100%; border-left-color: var(--success);">
+                    <h3 style="color: var(--success);">2. Giá trị thặng dư tương đối (Tối ưu nhân sự)</h3>
+                    <p style="font-size: 1.15rem; text-align: left;">
+                        Đầu tư hệ thống trả lời tự động (Chatbot AI) và phần mềm chốt đơn. Công nghệ giúp năng suất tăng, 1 nhân viên có thể xử lý mượt mà 25-50 đơn/ngày.<br>
+                        ➔ <strong>Hành động thực tiễn:</strong> Do thị trường chỉ hấp thụ 25 đơn/ngày, shop <strong>cắt giảm từ 2 nhân viên xuống còn 1 nhân viên</strong>. Điều này làm quỹ lương khả biến (v) giảm đi một nửa, rút ngắn thời gian lao động tất yếu, trực tiếp làm tăng <em>Tỷ suất m'</em> và tỷ suất lợi nhuận cho chủ shop.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>Slide 11 - Thách Thức & Giải Pháp</h2>
+            <div class="content-node">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 45%; background-color: var(--secondary);">THÁCH THỨC VĨ MÔ</th>
+                            <th style="width: 55%; background-color: var(--success);">GIẢI PHÁP VẬN HÀNH</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Xung đột lợi ích (Cơ chế hoa hồng):</strong> <br>Việc áp dụng hoa hồng đồng đội (Chia đều) có thể gây ra tâm lý ỷ lại, người làm nhiều hưởng bằng người làm ít.</td>
+                            <td><span style="color: var(--success); font-weight: bold;">➔</span> <strong>Giải pháp:</strong> Chuyển sang cơ chế <em>Hoa hồng cá nhân</em> (Ai chốt người đó hưởng 5.000đ) kết hợp đánh giá KPI chéo để thúc đẩy quy luật cạnh tranh nội bộ.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cạnh tranh ngành thương mại:</strong> <br>Rào cản gia nhập ngành thấp, nhiều đối thủ cạnh tranh bằng cách phá giá bán lẻ.</td>
+                            <td><span style="color: var(--success); font-weight: bold;">➔</span> <strong>Giải pháp:</strong> Tích tụ tư bản quy mô lớn hơn để đàm phán nhập sỉ lô lớn (hạ chi phí <em>c</em>), kết hợp bán dịch vụ giá trị gia tăng (Custom, sơn mô hình).</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>Slide 12 - Tổng Kết Môn Học</h2>
+            <div class="content-node" style="max-width: 900px; background: rgba(0,0,0,0.2); padding: 2.5rem; border-radius: 15px; border: 1px solid #334155;">
+                <p style="text-align: justify; font-size: 1.25rem; margin-bottom: 1.5rem; line-height: 1.8;">
+                    Qua phân tích mô hình kinh doanh đồ chơi Gundam trong 1 tháng, với tư bản ứng trước <strong style="color: var(--secondary);">78.600.000 VNĐ</strong>, dự án mang lại giá trị thặng dư khối lượng lớn lên tới <strong style="color: var(--accent);">26.400.000 VNĐ</strong> và tỷ suất <strong style="color: var(--success);">176,00%</strong>.
+                </p>
+                <p style="text-align: justify; font-size: 1.25rem; line-height: 1.8;">
+                    Kết quả này minh chứng sâu sắc lý luận của C.Mác: Việc kết hợp khéo léo giữa lương thời gian (Lương cứng 30 ngày) và lương sản phẩm (Hoa hồng) là một hình thức tối ưu để khai thác triệt để sức lao động. Đồng thời, nó khẳng định tư bản thương nghiệp tuy không trực tiếp sản xuất, nhưng lại là khâu thiết yếu để thực hiện hóa Giá trị thặng dư trong nền kinh tế thị trường định hướng XHCN.
+                </p>
+                <p style="margin-top: 2.5rem; font-family: 'Oswald', sans-serif; font-size: 1.8rem; color: var(--primary); text-align: center; letter-spacing: 1px;">XIN CẢM ƠN THẦY CÔ VÀ CÁC BẠN ĐÃ LẮNG NGHE!</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let currentIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const progressIndicator = document.getElementById('progressIndicator');
+
+        function updateSlide() {
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active');
+                if (index === currentIndex) {
+                    slide.classList.add('active');
+                }
+            });
+            let total = slides.length;
+            let current = currentIndex + 1;
+            progressIndicator.innerText = `SLIDE: ${current < 10 ? '0' + current : current} / ${total < 10 ? '0' + total : total}`;
+        }
+
+        function moveSlide(direction) {
+            currentIndex += direction;
+            if (currentIndex < 0) currentIndex = slides.length - 1;
+            if (currentIndex >= slides.length) currentIndex = 0;
+            updateSlide();
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                moveSlide(1);
+            } else if (e.key === 'ArrowLeft') {
+                moveSlide(-1);
+            }
+        });
+    </script>
+</body>
+</html>
